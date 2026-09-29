@@ -50,14 +50,17 @@ public static class SensorAnalyzer
     public static bool IsUsableReading(
         double reading, double minimum, double maximum)
     {
+        // Check that range arguments are valid
         if (!double.IsFinite(minimum) || !double.IsFinite(maximum) || minimum > maximum) 
         {
             throw new ArgumentException();
         }
+        // NaN and infinity are not usable readings
         if (!double.IsFinite(reading))
         {
             return false;
         }
+        // checks range for finite reading
         else if (reading >= minimum && reading <= maximum)
         {
             return true; 
@@ -71,16 +74,20 @@ public static class SensorAnalyzer
     public static List<double> CleanReadings(
         IReadOnlyList<double> readings, double minimum, double maximum)
     {
+        // Check that range arguments are valid
     if (!double.IsFinite(minimum) || !double.IsFinite(maximum)|| minimum > maximum)
         {
             throw new ArgumentException();
         }
+        // null collection is an invalid arugment 
     if ((readings == null))
         {
             throw new ArgumentException();
         }
+        // new list to hold cleaned readings
     List<double> cleaned = new List<double>();
 
+        // adds usable readings to cleaned list
     foreach(double reading in readings)
         {
             if (IsUsableReading(reading, minimum, maximum))
@@ -94,17 +101,20 @@ public static class SensorAnalyzer
     public static bool ContainsApproximately(
         IReadOnlyList<double> readings, double target, double tolerance)
     {
+        // input collection cannot be null
     if (readings == null) 
         {
             throw new ArgumentException();
         }
+        // target and tolerance must be finite, and tolerance cannot be negative
     if (!double.IsFinite(target) || !double.IsFinite(tolerance) || tolerance < 0.0) 
         {
             throw new ArgumentException();
         }
+        // check each reading to see if its within tolerance
     foreach (double reading in readings)
         {
-            if (Math.Abs(reading - target) <= tolerance)
+            if (double.IsFinite(reading) && Math.Abs(reading - target) <= tolerance)
             {
                 return true;
             }
@@ -115,15 +125,17 @@ public static class SensorAnalyzer
     public static List<double> MovingAverage(
         IReadOnlyList<double> readings, int windowSize)
     {
+        // input collection cannot be null
     if (readings == null) 
         {
             throw new ArgumentException();
         }
+        // window must have at least 1 value
     if (windowSize <= 0) 
         {
             throw new ArgumentException();
         }
-    
+    // MovingAverage does not accept NaN or infinite readings
     foreach (double reading in readings)
         {
             if (!double.IsFinite(reading))
@@ -131,21 +143,23 @@ public static class SensorAnalyzer
                 throw new ArgumentException();
             }
         }
-
+    // store averages in a new list
     List<double> averages = new List<double>();
 
     if (windowSize > readings.Count)
         {
             return averages;
         }
+        // move the starting position of the window through readings
     for (int i = 0; i <= readings.Count - windowSize; i++)
         {
         double sum = 0.0;
-
+        // add all readings contained in window
         for (int j = 0; j < windowSize; j++)
             {
                 sum += readings[i+j]; 
             }
+            // calc and store the mean of current window
         averages.Add(sum / windowSize);
         }
         return averages;
